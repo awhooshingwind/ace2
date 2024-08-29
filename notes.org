@@ -1,0 +1,33 @@
+#+OPTIONS: tex:t num:nil toc:nil
+* Ace2 Interface Program Notes
+
+
+
+Use pixel format Mono12:
+
+# Set the pixel format to Mono 12
+camera.PixelFormat.Value = "Mono12"
+
+
+Use 10 ms exposure time, 3 consecutive imgs (for testing), then,
+img math and display result (maybe 3 calc imgs, too)
+
+
+** Image Calculation
+
+#+begin_example
+if ( (shallow < dark) || ( (light - dark) < (shallow - dark) )):
+    img=1
+else:
+   round(1000.0 * log((light-dark)/(shallow-dark))).astype(uint16)
+#+end_example
+
+** Notes
+- TrigSeq class for storing/processing images?
+
+*** Links:
+- [[https://docs.baslerweb.com/a2a1920-160umbas][ace2 documentation]]
+- [[https://www.baslerweb.com/en-us/shop/a2a1920-160umbas/][ace2 product page]]
+- [[https://github.com/basler/pypylon][pypylon]]
+- [[https://docs.baslerweb.com/pylonapi/cpp/][pylon API]]
+- [[https://github.com/basler/pypylon-samples/blob/main/notebooks/USB_hardware_trigger_and_chunks.ipynb][USB hardware trigger example]]
