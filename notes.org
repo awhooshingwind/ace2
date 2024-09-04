@@ -1,12 +1,12 @@
 #+OPTIONS: tex:t num:nil toc:nil
 * Ace2 Interface Program Notes
 
-
-
-Use pixel format Mono12:
+Use pixel format Mono12p:
 
 # Set the pixel format to Mono 12
-camera.PixelFormat.Value = "Mono12"
+camera.PixelFormat.Value = "Mono12p"
+
+packed pixels allow for desired exposure time, unpacked forced to 12000us
 
 
 Use 10 ms exposure time, 3 consecutive imgs (for testing), then,
