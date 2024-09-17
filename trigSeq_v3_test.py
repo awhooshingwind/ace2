@@ -12,17 +12,18 @@ Requires pypylon
 """
 
 class TriggeredSequence:
-    def __init__(self, save_path='Basler', autosave=False):
+    def __init__(self, save_path='Basler', autosave=False, smoothing='Gaussian'):
         self.images = {}
         self.image_count = 0
         self.image_types = ['shadow', 'light', 'dark']
         self.save_path = save_path
         self.autosave = autosave
         self.sequence_count = 0
+        self.smoothing_type = smoothing
 
 
     def add_image(self, image):
-        print("img grabbed")
+        print("Img grabbed")
         self.images[self.image_types[self.image_count]] = image
         self.image_count += 1
         
@@ -33,9 +34,6 @@ class TriggeredSequence:
 
     def sequence_complete(self):
         self.sequence_count += 1
-        self.calc_result()
-        if self.autosave:
-            self.save_result()
         print(f"Sequence {self.sequence_count} completed...")
         
 
@@ -44,8 +42,16 @@ class TriggeredSequence:
         light = self.images['light']
         dark = self.images['dark']
 
-        # TESTING - smooth dark frame
-        dark = cv2.medianBlur(dark, 5)
+        # TESTING - smoothing dark frame
+        dark = (dark + np.random.normal(0, 25530, dark.shape)).astype(np.uint16) # add some noise SOFTWARE
+
+        if self.smoothing_type == 'Gaussian':
+            dark = cv2.GaussianBlur(dark, (11, 11), 180)
+        
+        elif self.smoothing_type == 'Median Blur':
+            dark = cv2.medianBlur(dark.astype(np.uint8), 11) # lossy convert to 8bit
+        
+        cv2.imshow('Dark test', dark) # FOR TESTING/DISPLAY blur outcome (not needed in final code)
 
         shadow = np.maximum(shadow, dark)
         light = np.maximum(light, dark)
@@ -61,12 +67,12 @@ class TriggeredSequence:
 
     def save_result(self):
         data = self.images['calc']
-        # Make dir if necessary
-        if not os.path.exists(self.save_path):
-            os.makedirs(self.save_path)
-        ## Edit filename convention here ## 
         timestamp = datetime.datetime.now().strftime('%m%d')
-        base_name = f"{self.save_path}/b{timestamp}"
+        # Make dir if necessary
+        if not os.path.exists(f"{self.save_path}/{timestamp}"):
+            os.makedirs(f"{self.save_path}/{timestamp}")
+        ## Edit filename convention here ## 
+        base_name = f"{self.save_path}/{timestamp}/b{timestamp}"
         filenumber = 1
         fname = base_name + str(filenumber) + '.txt'
         # check for duplicates, increment file number if exists
@@ -90,7 +96,11 @@ class TriggeredSequence:
         
 
     def display_calculated_image(self):
+        self.calc_result()
+        if self.autosave:
+            self.save_result()
         img = self.images['calc']
+        # img = self.images['dark'] # !!! FOR TESTING DARK FRAME SMOOTHING !!!!
         plt.imshow(img, cmap='viridis', vmax=np.max(img), vmin=np.min(img))
         plt.axis('off')
         plt.title('Calculated Image from Sequence')
@@ -118,42 +128,40 @@ class TriggeredSequence:
         plt.tight_layout()
         plt.show()
 
-def app_wrapper(autosave_flag):
-    ts = TriggeredSequence(autosave=autosave_flag)   
-
-    # Emulate camera for testing
-    os.environ["PYLON_CAMEMU"] = "1"
-    EXTERNAL_TRIGGER = False
-
-    camera = pylon.InstantCamera(pylon.TlFactory.GetInstance().CreateFirstDevice())
-
-    # changing this to True changes the Trigger to Line1 instead of the SpaceKey
-    # EXTERNAL_TRIGGER = True
-
+def config_camera(camera, EXTERNAL_TRIGGER):
     try:
         # setup camera aoi
         camera.Open()
-
-        # software settings
-        camera.TestImageSelector.SetValue("Testimage2")
-        camera.PixelFormat.Value = "Mono12" 
-
-        # configure ace2 camera
-        camera.ExposureTime.Value = 10000 # 10 ms
-        # camera.PixelFormat.Value = "Mono12p"
-        # camera.Gain.Value = 30.0
-
-        # set camera to frame trigger mode on Line1
-        camera.TriggerSelector.Value = "FrameStart"
+        
         if EXTERNAL_TRIGGER:
             camera.TriggerSource.Value = "Line1"
+            camera.PixelFormat.Value = "Mono12p"
+            camera.Gain.Value = 30.0
         else:
+            # software settings
+            camera.TestImageSelector.SetValue("Testimage2")
+            camera.PixelFormat.Value = "Mono16" 
             camera.TriggerSource.Value = "Software"
+            
+        # generic settings for both cases
+        camera.ExposureTime.Value = 10000 # 10 ms
+        camera.TriggerSelector.Value = "FrameStart"            
         camera.TriggerMode.Value = "On"
 
     except Exception as e:
         print(f"Error when configuring the camera: {e}")
 
+def app_wrapper(autosave_flag, trigger_flag, smoothing):
+    if not trigger_flag:
+        os.environ["PYLON_CAMEMU"] = "1"
+
+    camera = pylon.InstantCamera(pylon.TlFactory.GetInstance().CreateFirstDevice())
+    EXTERNAL_TRIGGER = trigger_flag
+    config_camera(camera, EXTERNAL_TRIGGER)
+
+
+    ts = TriggeredSequence(autosave=autosave_flag, smoothing=smoothing)   
+    
     # constant values
     num_images = 3
     figure_height = 300
