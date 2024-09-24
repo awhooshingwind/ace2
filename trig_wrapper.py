@@ -3,7 +3,7 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-import trigger_seq
+import trig_seq
 
 """ Define class for storing/displaying 3 triggered images, 
 using image sequence to calculate corrected image,
@@ -43,7 +43,7 @@ def trigger_mode(autosave_flag, trigger_flag, smoothing):
     config_camera(camera, EXTERNAL_TRIGGER)
 
 
-    ts = trigger_seq.TriggeredSequence(autosave=autosave_flag, smoothing=smoothing)   
+    ts = trig_seq.TriggeredSequence(autosave=autosave_flag, smoothing=smoothing)   
     
     # constant values
     num_images = 3

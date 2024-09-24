@@ -66,7 +66,7 @@ def video_mode(hw_trigger=True):
     
             # Display coordinates and intensity on the image
             info_text = f"Mouse Position: ({mouse_x}, {mouse_y})"
-            cv2.putText(frame, info_text, (10, 25), cv2.FONT_HERSHEY_DUPLEX,
+            cv2.putText(frame, info_text, (10, 20), cv2.FONT_HERSHEY_DUPLEX,
                         0.7, (255, 15, 5), 2)
     
             # Highlight the selected point
@@ -74,7 +74,7 @@ def video_mode(hw_trigger=True):
                 cv2.circle(frame, selected_point, 5, (0, 60, 155), -1)
                 selected_text = f"Selected Point: {selected_point}"
                 cv2.putText(frame, selected_text, (10, 50), cv2.FONT_HERSHEY_DUPLEX,
-                            0.7, (0, 55, 160), 2)
+                            0.8, (0, 55, 160), 2)
     
             # Show the frame
             cv2.imshow('Video Feed', frame)
