@@ -3,7 +3,28 @@ import os
 import cv2
 
 
-def video_mode():
+def config_camera(camera, hw_trigger_mode):
+    try:
+        # setup camera aoi
+        camera.Open()
+        
+        if not hw_trigger_mode:
+            camera.TestImageSelector.SetValue("Testimage2")
+            camera.PixelFormat.Value = "Mono16" 
+            
+        else:
+            camera.PixelFormat.Value = "Mono12p"
+            camera.Gain.Value = 30.0
+
+        # generic settings for both cases
+        camera.ExposureTime.Value = 10000 # 10 ms
+
+    except Exception as e:
+        print(f"Error when configuring the camera: {e}")
+
+
+def video_mode(hw_trigger=True):
+
     # Global variables
     mouse_x, mouse_y = 0, 0
     selected_point = None
@@ -15,18 +36,15 @@ def video_mode():
             mouse_x, mouse_y = x, y
         elif event == cv2.EVENT_LBUTTONDOWN:
             selected_point = (x, y)
-
-
-    # TESTING
-    os.environ["PYLON_CAMEMU"] = "1"
     
+        # TESTING
+    if not hw_trigger:
+        os.environ["PYLON_CAMEMU"] = "1"
+
     # Make Basler camera
     camera = pylon.InstantCamera(pylon.TlFactory.GetInstance().CreateFirstDevice())
-    
-    camera.Open()
-    camera.TestImageSelector.SetValue("Testimage2")
-    camera.PixelFormat.Value = "Mono16" 
-    
+    config_camera(camera, hw_trigger)
+
     # Grabbing Continuously (video) with minimal delay
     camera.StartGrabbing(pylon.GrabStrategy_LatestImageOnly)
     converter = pylon.ImageFormatConverter()

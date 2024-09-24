@@ -1,27 +1,27 @@
 import tkinter as tk
 from tkinter import ttk
 
-import app_wrapper as aw
+import trig_wrapper as tw
 import vid_wrapper as vw
 
-trigger_flag = False 
+hardware_trigger = False # True to enable HW trigger
 
 def run_sequence(autosave_flag, smoothing_type):
     info_label.config(
-        text=f"Ran sequence script\nParameters: \nautosave={autosave_flag}\ntrigger={trigger_flag}\nsmoothing={smoothing_type}"
+        text=f"Ran sequence script\nParameters: \nautosave={autosave_flag}\ntrigger={hardware_trigger}\nsmoothing={smoothing_type}"
         )
-    aw.trigger_mode(autosave_flag, trigger_flag, smoothing_type)
+    tw.trigger_mode(autosave_flag, hardware_trigger, smoothing_type)
 
 def start_video():
     info_label.config(
         text="Started video mode"
     )
-    vw.video_mode()
+    vw.video_mode(hardware_trigger)
     
 # Create main window
 root = tk.Tk()
-root.title("Basler Script Interface")
-root.geometry("220x285")
+root.title("Basler Interface")
+root.geometry("235x305")
 
 # Create autosave checkbox toggle
 save_flag = tk.IntVar()
