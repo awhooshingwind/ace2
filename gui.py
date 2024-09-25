@@ -4,7 +4,9 @@ from tkinter import ttk
 import trig_wrapper as tw
 import vid_wrapper as vw
 
-hardware_trigger = False # True to enable HW trigger
+hardware_trigger = True # True to enable HW trigger
+## NOTE: adjust image calculation settings in trig_seq.py if necessary
+# still testing light/dark frame smoothing and tuning k-size/sigma parameters
 
 def run_sequence(autosave_flag, smoothing_type):
     info_label.config(

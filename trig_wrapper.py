@@ -13,7 +13,7 @@ Requires pypylon
 
 def config_camera(camera, EXTERNAL_TRIGGER):
     try:
-        # setup camera aoi
+        # Set camera parameters for HW or software triggering
         camera.Open()
         
         if EXTERNAL_TRIGGER:
@@ -36,7 +36,7 @@ def config_camera(camera, EXTERNAL_TRIGGER):
 
 def trigger_mode(autosave_flag, trigger_flag, smoothing):
     if not trigger_flag:
-        os.environ["PYLON_CAMEMU"] = "1"
+        os.environ["PYLON_CAMEMU"] = "1" # for emulated camera
 
     camera = pylon.InstantCamera(pylon.TlFactory.GetInstance().CreateFirstDevice())
     EXTERNAL_TRIGGER = trigger_flag

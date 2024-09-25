@@ -42,32 +42,37 @@ class TriggeredSequence:
         light = self.images['light']
         dark = self.images['dark']
 
-        ### TESTING - smoothing dark frame
-        dark = (dark + np.random.normal(0, 530, dark.shape)).astype(np.uint16) # FOR TESTING add some noise
-
+        ### TESTING/IN PROGRESS - smoothing dark frame (and light frame)
+        # dark = (dark + np.random.normal(0, 1530, dark.shape)).astype(np.uint16) # FOR TESTING add some noise
         if self.smoothing_type == 'Gaussian':
             dark = cv2.GaussianBlur(dark, (11, 11), 180)
+            light = cv2.GaussianBlur(light, (11, 11), 180) # testing light frame smoothing
         
         elif self.smoothing_type == 'Median Blur':
             dark = cv2.medianBlur(dark.astype(np.uint8), 11) # lossy convert to 8bit
+            light = cv2.medianBlur(light.astype(np.uint8), 11)
         
-        cv2.imshow('Dark test', dark) # FOR TESTING/DISPLAY blur outcome (not needed in final code)
+        # cv2.imshow('Smooth test', dark) # FOR TESTING/DISPLAY blur outcome (not needed in final code)
 
         shadow = np.maximum(shadow, dark)
         light = np.maximum(light, dark)
+
+        # Absorption calculation
         result = np.where(
              (shadow <= dark) | ((light - dark) < (shadow - dark)), 1,
              np.round(1000.0 * np.log((light - dark) / (shadow - dark))).astype(np.uint16)
         )
         # handle NaN values
-        result = np.nan_to_num(result, nan=0, posinf=0, neginf=0).astype(np.uint16)
-        self.images['calc'] = result
-        
+        result = np.nan_to_num(result, nan=0, posinf=0, neginf=0).astype(np.uint16) # posinf -> 65535??
+        self.images['calc'] = result     
 
 
     def save_result(self):
+        """ Saves calculated absorption image in specified format for
+        image analysis with viewing software on lab computer
+        """
         data = self.images['calc']
-        timestamp = datetime.datetime.now().strftime('%m%d')
+        timestamp = datetime.datetime.now().strftime('%m%d') # MMDD
         # Make dir if necessary
         if not os.path.exists(f"{self.save_path}/{timestamp}"):
             os.makedirs(f"{self.save_path}/{timestamp}")
@@ -96,18 +101,21 @@ class TriggeredSequence:
         
 
     def display_calculated_image(self):
+        """ Uses matplotlib window to display result image with colormap...
+        needs to be adjusted to better integrate with tkinter interface
+        Moving plt window (in software mode) will crash python...doesn't seem to happen
+        when using hardware trigger (on lab computer at least)
+        """
         self.calc_result()
         if self.autosave:
             self.save_result()
         img = self.images['calc']
-        # img = self.images['dark'] # !!! FOR TESTING DARK FRAME SMOOTHING !!!!
         plt.imshow(img, cmap='viridis', vmax=np.max(img), vmin=np.min(img))
         plt.axis('off')
         plt.title('Calculated Image from Sequence')
         plt.tight_layout()
-        plt.pause(0.01)
+        plt.pause(0.1)
         plt.draw()
-        plt.show(block=False)
 
 
     # def display_images(self): # MESSY, not working currently

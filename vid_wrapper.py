@@ -2,10 +2,14 @@ from pypylon import pylon
 import os
 import cv2
 
+""" Wrapper module for displaying video feed from Basler camera with opencv,
+called by tkinter gui interface
+"""
+
 
 def config_camera(camera, hw_trigger_mode):
     try:
-        # setup camera aoi
+        # setup camera for video mode
         camera.Open()
         
         if not hw_trigger_mode:
@@ -25,7 +29,7 @@ def config_camera(camera, hw_trigger_mode):
 
 def video_mode(hw_trigger=True):
 
-    # Global variables
+    # Cursor variables
     mouse_x, mouse_y = 0, 0
     selected_point = None
 
@@ -37,7 +41,7 @@ def video_mode(hw_trigger=True):
         elif event == cv2.EVENT_LBUTTONDOWN:
             selected_point = (x, y)
     
-        # TESTING
+     # SOFTWARE TESTING
     if not hw_trigger:
         os.environ["PYLON_CAMEMU"] = "1"
 
@@ -66,15 +70,15 @@ def video_mode(hw_trigger=True):
     
             # Display coordinates and intensity on the image
             info_text = f"Mouse Position: ({mouse_x}, {mouse_y})"
-            cv2.putText(frame, info_text, (10, 20), cv2.FONT_HERSHEY_DUPLEX,
-                        0.7, (255, 15, 5), 2)
+            cv2.putText(frame, info_text, (10, 20), cv2.FONT_HERSHEY_COMPLEX,
+                        0.7, (226, 80, 55), 2)
     
             # Highlight the selected point
             if selected_point is not None:
                 cv2.circle(frame, selected_point, 5, (0, 60, 155), -1)
                 selected_text = f"Selected Point: {selected_point}"
-                cv2.putText(frame, selected_text, (10, 50), cv2.FONT_HERSHEY_DUPLEX,
-                            0.8, (0, 55, 160), 2)
+                cv2.putText(frame, selected_text, (10, 50), cv2.FONT_HERSHEY_COMPLEX,
+                            0.8, (50, 30, 152), 2)
     
             # Show the frame
             cv2.imshow('Video Feed', frame)
@@ -82,7 +86,7 @@ def video_mode(hw_trigger=True):
             # Wait for key press
             key = cv2.waitKey(1) & 0xFF
     
-            if key == ord('q') or key == 27:
+            if key == ord('q') or key == 27: # Exit with q or esc
                 break
             # Fine-tune selected point with 'a', 'w', 'd', 's' keys
             elif key == ord('a'):  # Left
