@@ -25,6 +25,8 @@ else:
 
 ** Notes
 - TrigSeq class for storing/processing images?
+- refactor img display to use tkinter better!
+    - see [[https://matplotlib.org/stable/gallery/user_interfaces/embedding_in_tk_sgskip.html][matplotlib embed in tk]]
 
 *** Links:
 - [[https://docs.baslerweb.com/a2a1920-160umbas][ace2 documentation]]
