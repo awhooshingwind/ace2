@@ -1,16 +1,21 @@
 #+OPTIONS: tex:t num:nil toc:nil
-* Ace2 Interface Program Notes
+* Ace2 Interface Program
 
-Use pixel format Mono12p:
-
-# Set the pixel format to Mono 12
-camera.PixelFormat.Value = "Mono12p"
-
-packed pixels allow for desired exposure time, unpacked forced to 12000us
+** Refactoring
 
 
-Use 10 ms exposure time, 3 consecutive imgs (for testing), then,
-img math and display result (maybe 3 calc imgs, too)
+
+*** Imaging
+Module for handling different image grabbing routines
+- HW trigger sequence
+- "video" stream image mode (alignment)
+- hot pixel detect/update
+Could also include general camera config method, then specific versions for each subroutine...
+
+
+*** App
+- app wrappers
+- gui.py
 
 
 ** Image Calculation
@@ -24,6 +29,18 @@ else:
 #+end_example
 
 ** Notes
+
+Use pixel format Mono12p:
+
+# Set the pixel format to Mono 12
+camera.PixelFormat.Value = "Mono12p"
+
+packed pixels allow for desired exposure time, unpacked forced to 12000us
+
+
+Use 10 ms exposure time, 3 consecutive imgs (for testing), then,
+img math and display result (maybe 3 calc imgs, too)
+
 - TrigSeq class for storing/processing images?
 
 *** Links:

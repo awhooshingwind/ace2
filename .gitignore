@@ -4,8 +4,9 @@ PixelFly Demo/
 # Ignore the "Basler" directory
 Basler/
 
-# ignore .txt photos and .org~ temp
+# ignore .txt/.tif photos and .org~ temp
 *.txt 
+*.tif
 *.org~
 
 # Standard Python ignores

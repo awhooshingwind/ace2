@@ -1,10 +1,10 @@
 import tkinter as tk
 from tkinter import ttk
 
-import trig_wrapper as tw
-import vid_wrapper as vw
+from imaging import trigmode as tw
+from imaging import videomode as vw
 
-hardware_trigger = True # True to enable HW trigger
+hardware_trigger = False # True to enable HW trigger
 ## NOTE: adjust image calculation settings in trig_seq.py if necessary
 # still testing light/dark frame smoothing and tuning k-size/sigma parameters
 
@@ -19,11 +19,18 @@ def start_video():
         text="Started video mode"
     )
     vw.video_mode(hardware_trigger)
+
+def update_hot_pixels():
+    return
     
 # Create main window
 root = tk.Tk()
 root.title("Basler Interface")
-root.geometry("250x265")
+root.geometry("250x285")
+
+# Create hot pixel update button
+hot_pixel_button = ttk.Button(root, text="Update Hot Pixel Coords", command=lambda: update_hot_pixels())
+hot_pixel_button.pack(pady=8)
 
 # Create autosave checkbox toggle
 save_flag = tk.IntVar()
@@ -45,6 +52,7 @@ start_button.pack(pady=8)
 # Create video mode button
 video_button = ttk.Button(root, text="Start Video Mode", command=lambda: start_video())
 video_button.pack(pady=8)
+
 
 # Create info label
 info_label = ttk.Label(root, 
