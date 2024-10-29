@@ -12,14 +12,14 @@ Requires pypylon
 """
 # Helpers
 
-def fix_hot_pixels(image, type='simple'):
+def fix_hot_pixels(image, mode='simple'):
         with open('./hotpixels.npy', 'rb') as f:
             hot_pixels = np.load(f)
         
         rows = hot_pixels[:,0]
         cols = hot_pixels[:,1]
 
-        if type == 'simple':
+        if mode == 'simple':
             # removal
             image[rows, cols] = 0 # can be adjusted to be more elaborate...
             return image
@@ -40,20 +40,39 @@ class TriggeredSequence:
         self.sequence_count = 0
         self.smoothing_type = smoothing
 
+        self.figh, self.figw = 300, 1200
+        self.combined_image = np.zeros((self.figh, self.figw), dtype=np.uint16)
+        self.resized_imgs = []
+        cv2.imshow('Triggered Images', self.combined_image)
+
 
     def add_image(self, image):
-        print("Img grabbed")
+        
+        print("Img sequenced")
         self.images[self.image_types[self.image_count]] = image
         self.image_count += 1
-        
+        self.display_incoming(image)
         if self.image_count == 3:
             self.sequence_complete()
             self.image_count = 0
-    
+
+    def display_incoming(self, image):
+        # Display incoming images
+        w_ratio = self.figw//3
+        self.resized_imgs.append(image)
+            
+        for i in range(len(self.resized_imgs)):
+            self.resized_imgs[i] = cv2.resize(self.resized_imgs[i], (w_ratio, self.figh))
+            self.combined_image[0:self.figh, i*w_ratio:(i+1)*w_ratio] = self.resized_imgs[i]
+        cv2.imshow('Triggered Images', self.combined_image)
 
     def sequence_complete(self):
         self.sequence_count += 1
         print(f"Sequence {self.sequence_count} completed...")
+        # Auto every 3...testing!
+        self.calc_result()
+        self.display_calculated_image()
+        self.resized_imgs = []
         
 
     def calc_result(self):
@@ -64,7 +83,7 @@ class TriggeredSequence:
         ### TESTING HOT PIXEL FIX
         # add some fake hot pixels
         
-        light = fix_hot_pixels(light, type='simple')
+        light = fix_hot_pixels(light, mode='simple')
         # cv2.imshow('fix', light)
 
         ### TESTING/IN PROGRESS - smoothing dark frame (and light frame)

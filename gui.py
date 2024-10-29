@@ -3,10 +3,18 @@ from tkinter import ttk
 
 from imaging import trigmode as tw
 from imaging import videomode as vw
+from imaging import playground as play
 
 hardware_trigger = False # True to enable HW trigger
 ## NOTE: adjust image calculation settings in trig_seq.py if necessary
 # still testing light/dark frame smoothing and tuning k-size/sigma parameters
+
+def new_config_test():
+    info_label.config(
+        text="Caution, in progress..."
+    )
+    play.button_wrap()
+
 
 def run_sequence(autosave_flag, smoothing_type):
     info_label.config(
@@ -27,6 +35,10 @@ def update_hot_pixels():
 root = tk.Tk()
 root.title("Basler Interface")
 root.geometry("250x285")
+
+# Create test playground button
+test_button = ttk.Button(root, text="Yipes", command=lambda: new_config_test())
+test_button.pack(pady=8)
 
 # Create hot pixel update button
 hot_pixel_button = ttk.Button(root, text="Update Hot Pixel Coords", command=lambda: update_hot_pixels())

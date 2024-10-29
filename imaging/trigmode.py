@@ -37,6 +37,7 @@ def config_camera(camera, EXTERNAL_TRIGGER):
         print(f"Error when configuring the camera: {e}")
 
 def trigger_mode(autosave_flag, trigger_flag, smoothing):
+
     if not trigger_flag:
         os.environ["PYLON_CAMEMU"] = "1" # for emulated camera
 
@@ -49,23 +50,15 @@ def trigger_mode(autosave_flag, trigger_flag, smoothing):
     
     # constant values
     num_images = 3
-    figure_height = 300
-    figure_width = 1200
-
-    w_ratio = figure_width // 3
-
-    combined_image = np.zeros((figure_height, figure_width), dtype=np.uint16)
-
+ 
     def StartTriggerSequence(ts):
         # runtime values
-        resized_images = []
         current_image_index = 0
 
         camera.StartGrabbing(pylon.GrabStrategy_LatestImageOnly)
 
         while camera.IsGrabbing():
             while current_image_index <= num_images:
-                cv2.imshow('Combined Images', combined_image)
                 if current_image_index == 3:
                     break
                 key = cv2.waitKey(1)
@@ -88,7 +81,7 @@ def trigger_mode(autosave_flag, trigger_flag, smoothing):
                         img = grabResult.GetArray()
                         # images[img_type[current_image_index]] = img
                         ts.add_image(img)
-                        img = cv2.normalize(img, None, alpha=0, beta=65535, norm_type=cv2.NORM_MINMAX)
+                        # img = cv2.normalize(img, None, alpha=0, beta=65535, norm_type=cv2.NORM_MINMAX)
 
                 except pylon.TimeoutException as timeout_error:
                     raise AssertionError("Timeout error, this should not happen, "
@@ -97,26 +90,16 @@ def trigger_mode(autosave_flag, trigger_flag, smoothing):
                 except AssertionError as assertion_error:
                     raise AssertionError("Unsuccessful grab, this should not happen at all!") from assertion_error
 
-                # we dont need the capture flag variable anymore,
-                # because of every image is grabbed on purpose, just add every incoming image
-                resized_images.append(img.copy())
-                for i in range(len(resized_images)):
-                    h, w = resized_images[i].shape
-
-                    resized_images[i] = cv2.resize(resized_images[i], (w_ratio, figure_height))
-                    combined_image[0:figure_height, i * w_ratio: (i+1)* w_ratio] = resized_images[i]
-                cv2.imshow('Combined Images', combined_image)
                 current_image_index += 1
 
             camera.StopGrabbing()
             return True
 
-
-
     while True:
         try:
             if (StartTriggerSequence(ts)):
-                ts.display_calculated_image()
+                print('yay')
+                # ts.display_calculated_image()
             else:
                 print("Software exit..")
                 break
