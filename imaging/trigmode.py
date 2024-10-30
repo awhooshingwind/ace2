@@ -3,7 +3,9 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import msvcrt
 from imaging import trig_seq
+from imaging import camera_config as cc
 
 """ Define class for storing/displaying 3 triggered images, 
 using image sequence to calculate corrected image,
@@ -11,43 +13,16 @@ then saving the resulting image as .txt file for analysis
 Requires pypylon
 """
 
-def config_camera(camera, EXTERNAL_TRIGGER):
-    try:
-        # Set camera parameters for HW or software triggering
-        camera.Open()
-        
-        if EXTERNAL_TRIGGER:
-            camera.TriggerSource.Value = "Line1"
-            camera.PixelFormat.Value = "Mono12p"
-            camera.Gain.Value = 30.0
-        else:
-            # software settings
-            camera.TestImageSelector.SetValue("Testimage2")
-            camera.PixelFormat.Value = "Mono16" 
-            camera.TriggerSource.Value = "Software"
-            camera.Width.Value = 1920
-            camera.Height.Value = 1200
-            
-        # generic settings for both cases
-        camera.ExposureTime.Value = 10000 # 10 ms
-        camera.TriggerSelector.Value = "FrameStart"            
-        camera.TriggerMode.Value = "On"
 
-    except Exception as e:
-        print(f"Error when configuring the camera: {e}")
-
-def trigger_mode(autosave_flag, trigger_flag, smoothing):
+def trigger_mode(trigger_flag, ts):
 
     if not trigger_flag:
-        os.environ["PYLON_CAMEMU"] = "1" # for emulated camera
-
-    camera = pylon.InstantCamera(pylon.TlFactory.GetInstance().CreateFirstDevice())
-    EXTERNAL_TRIGGER = trigger_flag
-    config_camera(camera, EXTERNAL_TRIGGER)
-
-
-    ts = trig_seq.TriggeredSequence(autosave=autosave_flag, smoothing=smoothing)   
+        camera = cc.emu_camera() # for emulated camera
     
+    else:
+        camera = cc.init_camera()
+        cc.config_camera(camera)
+ 
     # constant values
     num_images = 3
  
@@ -59,13 +34,14 @@ def trigger_mode(autosave_flag, trigger_flag, smoothing):
 
         while camera.IsGrabbing():
             while current_image_index <= num_images:
+                cv2.imshow('Triggered_Images', ts.combined_image)
                 if current_image_index == 3:
                     break
                 key = cv2.waitKey(1)
                 if key == 27 or key == ord('q'):  # Esc key or q to exit
                     camera.StopGrabbing()
                     return False
-                elif not EXTERNAL_TRIGGER and key == ord(" "):
+                elif not trigger_flag and key == ord(" "):
                     camera.ExecuteSoftwareTrigger()
 
                 # you cant check your key entry and wait for the next image in one thread at the same time,
@@ -99,15 +75,13 @@ def trigger_mode(autosave_flag, trigger_flag, smoothing):
         try:
             if (StartTriggerSequence(ts)):
                 print('yay')
-                # ts.display_calculated_image()
             else:
                 print("Software exit..")
                 break
         except KeyboardInterrupt:
             print("Interrupted, exiting...")
             break
-        # cv2.waitKey(1) # for software testing
-    # camera.stopGrabbing()
+
     camera.Close()
     cv2.destroyAllWindows()
     plt.close('all')

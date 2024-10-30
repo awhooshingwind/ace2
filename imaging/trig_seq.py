@@ -43,9 +43,9 @@ class TriggeredSequence:
         self.figh, self.figw = 300, 1200
         self.combined_image = np.zeros((self.figh, self.figw), dtype=np.uint16)
         self.resized_imgs = []
-        cv2.imshow('Triggered Images', self.combined_image)
-
-
+        # cv2.imshow('Triggered_Images', self.combined_image)
+    
+        
     def add_image(self, image):
         
         print("Img sequenced")
@@ -64,7 +64,8 @@ class TriggeredSequence:
         for i in range(len(self.resized_imgs)):
             self.resized_imgs[i] = cv2.resize(self.resized_imgs[i], (w_ratio, self.figh))
             self.combined_image[0:self.figh, i*w_ratio:(i+1)*w_ratio] = self.resized_imgs[i]
-        cv2.imshow('Triggered Images', self.combined_image)
+            cv2.imshow('Triggered_Images', self.combined_image)
+        
 
     def sequence_complete(self):
         self.sequence_count += 1
@@ -81,8 +82,6 @@ class TriggeredSequence:
         dark = self.images['dark']
 
         ### TESTING HOT PIXEL FIX
-        # add some fake hot pixels
-        
         light = fix_hot_pixels(light, mode='simple')
         # cv2.imshow('fix', light)
 
@@ -158,8 +157,9 @@ class TriggeredSequence:
         plt.axis('off')
         plt.title('Calculated Image from Sequence')
         plt.tight_layout()
-        plt.pause(0.1)
         plt.draw()
+        plt.pause(0.01)
+        
 
 
     # def display_images(self): # MESSY, not working currently

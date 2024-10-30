@@ -1,13 +1,13 @@
 import tkinter as tk
 from tkinter import ttk
 
+from imaging import trig_seq as ts
 from imaging import trigmode as tw
 from imaging import videomode as vw
 from imaging import playground as play
 
 hardware_trigger = False # True to enable HW trigger
-## NOTE: adjust image calculation settings in trig_seq.py if necessary
-# still testing light/dark frame smoothing and tuning k-size/sigma parameters
+
 
 def new_config_test():
     info_label.config(
@@ -15,12 +15,14 @@ def new_config_test():
     )
     play.button_wrap()
 
-
 def run_sequence(autosave_flag, smoothing_type):
     info_label.config(
         text=f"Ran sequence script with parameters:\nautosave={autosave_flag}\ntrigger={hardware_trigger}\nsmoothing={smoothing_type}"
         )
-    tw.trigger_mode(autosave_flag, hardware_trigger, smoothing_type)
+
+    trigger_seq = ts.TriggeredSequence(autosave_flag, hardware_trigger, smoothing_type)
+    tw.trigger_mode(hardware_trigger, trigger_seq)
+
 
 def start_video():
     info_label.config(
@@ -35,6 +37,7 @@ def update_hot_pixels():
 root = tk.Tk()
 root.title("Basler Interface")
 root.geometry("250x285")
+
 
 # Create test playground button
 test_button = ttk.Button(root, text="Yipes", command=lambda: new_config_test())
@@ -57,7 +60,7 @@ smoothing_box.configure(state='readonly')
 smoothing_box.current(0)
 smoothing_box.pack(pady=8)
 
-# Create start button
+# Create start triggered sequence button
 start_button = ttk.Button(root, text="Run Triggered Sequence", command=lambda: run_sequence(save_flag.get(), smoothing_box.get()))
 start_button.pack(pady=8)
 

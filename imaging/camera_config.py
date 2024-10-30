@@ -58,10 +58,7 @@ def config_camera(camera, mode='HW', exposure=10000, gain=23.0, trigger=True):
 
     except Exception as e:
         print(f"Error when configuring the camera: {e}")
-
-    # finally:
-    #     camera.Close()
-    
+        
     print('config ok')
 
 def emu_camera():
