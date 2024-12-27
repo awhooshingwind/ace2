@@ -11,7 +11,6 @@ then saving the resulting image as .txt file for analysis
 Requires pypylon
 """
 
-
 # Helpers
 def fix_hot_pixels(image):
         with open('./hotpixels.npy', 'rb') as f:

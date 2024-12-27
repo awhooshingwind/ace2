@@ -7,7 +7,7 @@ from imaging import video_mode as vw
 # from imaging import playground as play
 from imaging import hot_button as hb
 
-hardware_trigger = False 
+hardware_trigger = False
 
 # TESTING IN PROGRESS
 # def new_config_test():
