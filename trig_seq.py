@@ -13,26 +13,19 @@ Requires pypylon
 
 
 # Helpers
-def fix_hot_pixels(image, mode='simple'):
+def fix_hot_pixels(image):
         with open('./hotpixels.npy', 'rb') as f:
             hot_pixels = np.load(f)
-        print(hot_pixels.shape)
-
+        # print(hot_pixels.shape)
 
         rows = hot_pixels[:,0]
         cols = hot_pixels[:,1]
 
-        if mode == 'simple':
-            # flag as neg
-            image = image.astype(np.int16)
-            image[rows, cols] = -4000 # max neg. value??
-            return image
-        else: # use inpainting
-            mask = np.zeros(image.shape, dtype=np.uint8)
-            mask[rows, cols] = 1
-            fixed = cv2.inpaint(image, mask, 3, cv2.INPAINT_TELEA)
+        # flag as negative value (-4000)
+        image = image.astype(np.int16)
+        image[rows, cols] = -4000 
+        return image
 
-            return fixed
 
 class TriggeredSequence:
     def __init__(self, save_path='Basler', autosave=False, smoothing='Gaussian'):
@@ -47,7 +40,7 @@ class TriggeredSequence:
         self.figh, self.figw = 300, 1200
         self.combined_image = np.zeros((self.figh, self.figw), dtype=np.uint16)
         self.resized_imgs = []
-        # cv2.imshow('Triggered_Images', self.combined_image)
+        # cv2.imshow('Triggered_Images', self.combined_image) # testing for event handler
     
         
     def add_image(self, image):
@@ -61,7 +54,7 @@ class TriggeredSequence:
             self.image_count = 0
 
     def display_incoming(self, image):
-        # Display incoming images
+        # Display incoming images, testing for event handler approach
         w_ratio = self.figw//3
         self.resized_imgs.append(image)
             
@@ -74,10 +67,8 @@ class TriggeredSequence:
     def sequence_complete(self):
         self.sequence_count += 1
         print(f"Sequence {self.sequence_count} completed...")
-        # Auto every 3...testing!
+
         self.calc_result()
-        # if self.autosave:
-        #     self.save_result()
         self.display_calculated_image()
         self.resized_imgs = []
         
@@ -97,7 +88,6 @@ class TriggeredSequence:
             dark = cv2.medianBlur(dark.astype(np.uint8), 11) # lossy convert to 8bit
             light = cv2.medianBlur(light.astype(np.uint8), 11)
         
-        # cv2.imshow('Smooth test', dark) # FOR TESTING/DISPLAY blur outcome (not needed in final code)
 
         shadow = np.maximum(shadow, dark)
         light = np.maximum(light, dark)
@@ -108,7 +98,7 @@ class TriggeredSequence:
              np.round(1000.0 * np.log((light - dark) / (shadow - dark))).astype(np.uint16)
         )
         # handle NaN values
-        result = np.nan_to_num(result, nan=0, posinf=0, neginf=0).astype(np.uint16) # posinf -> 65535??
+        result = np.nan_to_num(result, nan=0, posinf=0, neginf=0).astype(np.uint16) 
         result = fix_hot_pixels(result) # remove later
         self.images['calc'] = result
 
@@ -153,7 +143,6 @@ class TriggeredSequence:
         Moving plt window (in software mode) will crash python...doesn't seem to happen
         when using hardware trigger (on lab computer at least)
         """
-        # self.calc_result()
         if self.autosave:
             self.save_result()
         img = self.images['calc']
@@ -164,22 +153,3 @@ class TriggeredSequence:
         plt.draw()
         plt.pause(0.01)
         
-
-
-    # def display_images(self): # MESSY, not working currently
-    #     plt.close('all')
-    #     fig = plt.figure(figsize=(10,5))
-    #     ax_shadow = plt.subplot(231)
-    #     ax_light = plt.subplot(232)
-    #     ax_dark = plt.subplot(233)
-    #     ax_calc = plt.subplot(212)
-
-    #     axs = [ax_shadow, ax_light, ax_dark, ax_calc]
-    #     for i, (k, v) in enumerate(self.images.items()):
-    #         axs[i].imshow(v, cmap='viridis', vmax=np.max(v), vmin=np.min(v))
-    #         axs[i].set_title(k)
-    #         axs[i].set_axis_off()
-
-    #     # plt.pause(0.1) # plt.pause so non-blocking
-    #     plt.tight_layout()
-    #     plt.show()

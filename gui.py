@@ -1,20 +1,20 @@
 import tkinter as tk
 from tkinter import ttk
 
-from imaging import trig_seq as ts
-from imaging import trigmode as tw
-from imaging import videomode as vw
-from imaging import playground as play
-from imaging import hot_pixel_test as hp
+import trig_seq as ts
+from imaging import trigger_mode as tw
+from imaging import video_mode as vw
+# from imaging import playground as play
+from imaging import hot_button as hb
 
 hardware_trigger = False 
 
-
-def new_config_test():
-    info_label.config(
-        text="Caution, in progress..."
-    )
-    play.button_wrap()
+# TESTING IN PROGRESS
+# def new_config_test():
+#     info_label.config(
+#         text="Caution, in progress..."
+#     )
+#     play.button_wrap()
 
 def run_sequence(autosave_flag, smoothing_type):
     info_label.config(
@@ -22,17 +22,17 @@ def run_sequence(autosave_flag, smoothing_type):
         )
 
     trigger_seq = ts.TriggeredSequence(autosave=autosave_flag, smoothing=smoothing_type)
-    tw.trigger_mode(hardware_trigger, trigger_seq)
+    tw(hardware_trigger, trigger_seq)
 
 
 def start_video():
     info_label.config(
         text="Started video mode"
     )
-    vw.video_mode(hardware_trigger)
+    vw(hw_mode=hardware_trigger)
 
 def update_hot_pixels():
-    hp.hot_button()
+    hb()
     
 # Create main window
 root = tk.Tk()
@@ -42,8 +42,8 @@ root.geometry("250x295")
 top_row = tk.Frame(root)
 top_row.pack(pady=8)
 # Create test playground button
-test_button = ttk.Button(top_row, text="Feature Test", command=lambda: new_config_test())
-test_button.pack(side='left', padx=8)
+# test_button = ttk.Button(top_row, text="Feature Test", command=lambda: new_config_test())
+# test_button.pack(side='left', padx=8)
 
 # Create hot pixel update button
 hot_pixel_button = ttk.Button(top_row, 
