@@ -3,7 +3,6 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-import msvcrt
 from imaging import trig_seq
 from imaging import camera_config as cc
 

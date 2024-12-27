@@ -5,8 +5,9 @@ from imaging import trig_seq as ts
 from imaging import trigmode as tw
 from imaging import videomode as vw
 from imaging import playground as play
+from imaging import hot_pixel_test as hp
 
-hardware_trigger = False # True to enable HW trigger
+hardware_trigger = False 
 
 
 def new_config_test():
@@ -20,7 +21,7 @@ def run_sequence(autosave_flag, smoothing_type):
         text=f"Ran sequence script with parameters:\nautosave={autosave_flag}\ntrigger={hardware_trigger}\nsmoothing={smoothing_type}"
         )
 
-    trigger_seq = ts.TriggeredSequence(autosave_flag, hardware_trigger, smoothing_type)
+    trigger_seq = ts.TriggeredSequence(autosave=autosave_flag, smoothing=smoothing_type)
     tw.trigger_mode(hardware_trigger, trigger_seq)
 
 
@@ -31,21 +32,24 @@ def start_video():
     vw.video_mode(hardware_trigger)
 
 def update_hot_pixels():
-    return
+    hp.hot_button()
     
 # Create main window
 root = tk.Tk()
 root.title("Basler Interface")
-root.geometry("250x285")
+root.geometry("250x295")
 
-
+top_row = tk.Frame(root)
+top_row.pack(pady=8)
 # Create test playground button
-test_button = ttk.Button(root, text="Yipes", command=lambda: new_config_test())
-test_button.pack(pady=8)
+test_button = ttk.Button(top_row, text="Feature Test", command=lambda: new_config_test())
+test_button.pack(side='left', padx=8)
 
 # Create hot pixel update button
-hot_pixel_button = ttk.Button(root, text="Update Hot Pixel Coords", command=lambda: update_hot_pixels())
-hot_pixel_button.pack(pady=8)
+hot_pixel_button = ttk.Button(top_row, 
+                              text="Update Hot Pixel Coords", 
+                              command=lambda: update_hot_pixels())
+hot_pixel_button.pack(side='right', padx=8)
 
 # Create autosave checkbox toggle
 save_flag = tk.IntVar()
@@ -61,11 +65,15 @@ smoothing_box.current(0)
 smoothing_box.pack(pady=8)
 
 # Create start triggered sequence button
-start_button = ttk.Button(root, text="Run Triggered Sequence", command=lambda: run_sequence(save_flag.get(), smoothing_box.get()))
+start_button = ttk.Button(root, 
+                          text="Run Triggered Sequence", 
+                          command=lambda: run_sequence(save_flag.get(), smoothing_box.get()))
 start_button.pack(pady=8)
 
 # Create video mode button
-video_button = ttk.Button(root, text="Start Video Mode", command=lambda: start_video())
+video_button = ttk.Button(root, 
+                          text="Start Video Mode", 
+                          command=lambda: start_video())
 video_button.pack(pady=8)
 
 

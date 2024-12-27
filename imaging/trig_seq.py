@@ -10,18 +10,22 @@ using image sequence to calculate corrected image,
 then saving the resulting image as .txt file for analysis
 Requires pypylon
 """
-# Helpers
 
+
+# Helpers
 def fix_hot_pixels(image, mode='simple'):
         with open('./hotpixels.npy', 'rb') as f:
             hot_pixels = np.load(f)
-        
+        print(hot_pixels.shape)
+
+
         rows = hot_pixels[:,0]
         cols = hot_pixels[:,1]
 
         if mode == 'simple':
-            # removal
-            image[rows, cols] = 0 # can be adjusted to be more elaborate...
+            # flag as neg
+            image = image.astype(np.int16)
+            image[rows, cols] = -4000 # max neg. value??
             return image
         else: # use inpainting
             mask = np.zeros(image.shape, dtype=np.uint8)
@@ -72,6 +76,8 @@ class TriggeredSequence:
         print(f"Sequence {self.sequence_count} completed...")
         # Auto every 3...testing!
         self.calc_result()
+        # if self.autosave:
+        #     self.save_result()
         self.display_calculated_image()
         self.resized_imgs = []
         
@@ -80,10 +86,6 @@ class TriggeredSequence:
         shadow = self.images['shadow']
         light = self.images['light']
         dark = self.images['dark']
-
-        ### TESTING HOT PIXEL FIX
-        light = fix_hot_pixels(light, mode='simple')
-        # cv2.imshow('fix', light)
 
         ### TESTING/IN PROGRESS - smoothing dark frame (and light frame)
         # dark = (dark + np.random.normal(0, 1530, dark.shape)).astype(np.uint16) # FOR TESTING add some noise
@@ -107,6 +109,7 @@ class TriggeredSequence:
         )
         # handle NaN values
         result = np.nan_to_num(result, nan=0, posinf=0, neginf=0).astype(np.uint16) # posinf -> 65535??
+        result = fix_hot_pixels(result) # remove later
         self.images['calc'] = result
 
     
@@ -115,6 +118,7 @@ class TriggeredSequence:
         image analysis with viewing software on lab computer
         """
         data = self.images['calc']
+        # data = fix_hot_pixels(data) # or remove this
         timestamp = datetime.datetime.now().strftime('%m%d') # MMDD
         # Make dir if necessary
         if not os.path.exists(f"{self.save_path}/{timestamp}"):
@@ -149,7 +153,7 @@ class TriggeredSequence:
         Moving plt window (in software mode) will crash python...doesn't seem to happen
         when using hardware trigger (on lab computer at least)
         """
-        self.calc_result()
+        # self.calc_result()
         if self.autosave:
             self.save_result()
         img = self.images['calc']
