@@ -78,9 +78,9 @@ then saving the resulting image as .txt file for analysis
 Requires pypylon
 """
 
-def trigger_mode(trigger_flag, ts):
+def trigger_mode(hw_mode, ts):
 
-    if not trigger_flag:
+    if not hw_mode:
         camera = emu_camera() # for emulated camera
     
     else:
@@ -105,7 +105,7 @@ def trigger_mode(trigger_flag, ts):
                 if key == 27 or key == ord('q'):  # Esc key or q to exit
                     camera.StopGrabbing()
                     return False
-                elif not trigger_flag and key == ord(" "):
+                elif not hw_mode and key == ord(" "):
                     camera.ExecuteSoftwareTrigger()
 
                 # you cant check your key entry and wait for the next image in one thread at the same time,
@@ -241,8 +241,21 @@ def video_mode(hw_mode=True):
     camera.Close()
     cv2.destroyAllWindows()
 
+def fix_hot_pixels(image):
+        with open('./hotpixels.npy', 'rb') as f:
+            hot_pixels = np.load(f)
+        # print(hot_pixels.shape)
 
-    """ From a dark frame, determine locations of 'hot pixels' and save coordinates. From those coordinates, generate a mask to correct for hot pixels in subsequent frames (or use Basler built-in pixel defect correction...)
+        rows = hot_pixels[:,0]
+        cols = hot_pixels[:,1]
+
+        # flag as negative value (-4000)
+        image = image.astype(np.int16)
+        image[rows, cols] = -4000 
+        return image
+
+
+""" From a dark frame, determine locations of 'hot pixels' and save coordinates. From those coordinates, generate a mask to correct for hot pixels in subsequent frames (or use Basler built-in pixel defect correction...)
 """
 
 def take_dark_frame():
@@ -287,14 +300,16 @@ def find_hot_pixel(image, save=True):
             np.save(f, hot_pixel_coords)      
 
     return hot_pixel_coords
-    
 
 
 def hot_button():
       dark = take_dark_frame()
       find_hot_pixel(dark)
       print('hot pixel routine')
-'''
+
+
+
+"""
 ## TESTING
 # Compare dark frames taken with different gain values (max at 40, max analog at 23)
 with open('./noise/b10101.npy', 'rb') as f:
@@ -314,4 +329,49 @@ common_hot_pixels = common_hot_pixels.view(hot40.dtype).reshape(-1, 2)
 # print(np.equal(common_hot_pixels, hot23))
 # print(common_hot_pixels.shape)
 
-'''
+# Triggered single image mode with hot pixel correction
+# 
+# def single_image_mode(hw_mode=True):
+#     if not hw_mode:
+#         camera = emu_camera() # for emulated camera
+    
+#     else:
+#         camera = init_camera()
+#         config_camera(camera)
+        
+#     camera.StartGrabbing(pylon.GrabStrategy_LatestImageOnly)
+#     img = np.zeros((300, 300))
+#     while camera.IsGrabbing():
+        
+#         cv2.imshow('Single image', img)
+#         key = cv2.waitKey(1)
+#         if key == 27 or key == ord('q'):  # Esc key or q to exit
+#             break
+#         elif not hw_mode and key == ord(" "):
+#             camera.ExecuteSoftwareTrigger()
+#         # you cant check your key entry and wait for the next image in one thread at the same time,
+#         # so you can use this wait-object to check for new images and skip the 5 sec Timeout during RecieveResult
+#         if not camera.GetGrabResultWaitObject().Wait(10):
+#             continue
+#         try:
+#             # use the context handler, so you dont have to call "grabResult.Release" at the end
+#             with camera.RetrieveResult(5000, pylon.TimeoutHandling_ThrowException) as grabResult:
+#                 assert grabResult.GrabSucceeded()
+#                 # Accessing image data
+#                 img = grabResult.GetArray()
+#                 cv2.imshow('Single image', img)
+#         except Exception as e:
+#             print(f"Error {e}")   
+         
+#     camera.StopGrabbing()
+#     camera.Close()
+#     cv2.destroyAllWindows()
+                    
+#     fixed_image = fix_hot_pixels(img)
+#     plt.imshow(fixed_image, cmap='viridis', vmax=np.max(fixed_image), vmin=np.min(fixed_image))
+#     plt.axis('off')
+#     plt.title('Single Frame with Hot Pixel Flags')
+#     plt.tight_layout()
+#     plt.draw()
+#     plt.pause(0.01)
+"""

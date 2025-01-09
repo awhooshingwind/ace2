@@ -7,7 +7,7 @@ from imaging import video_mode as vw
 # from imaging import playground as play
 from imaging import hot_button as hb
 
-hardware_trigger = False
+hardware_trigger = True
 
 # TESTING IN PROGRESS
 # def new_config_test():
@@ -24,6 +24,9 @@ def run_sequence(autosave_flag, smoothing_type):
     trigger_seq = ts.TriggeredSequence(autosave=autosave_flag, smoothing=smoothing_type)
     tw(hardware_trigger, trigger_seq)
 
+def run_single(autosave_flag, smoothing_type):
+    trigger_seq = ts.TriggeredSequence(autosave=autosave_flag, smoothing=smoothing_type, singlet_flag=True)
+    tw(hardware_trigger, trigger_seq)
 
 def start_video():
     info_label.config(
@@ -33,6 +36,7 @@ def start_video():
 
 def update_hot_pixels():
     hb()
+
     
 # Create main window
 root = tk.Tk()
@@ -44,6 +48,7 @@ top_row.pack(pady=8)
 # Create test playground button
 # test_button = ttk.Button(top_row, text="Feature Test", command=lambda: new_config_test())
 # test_button.pack(side='left', padx=8)
+
 
 # Create hot pixel update button
 hot_pixel_button = ttk.Button(top_row, 
@@ -64,11 +69,19 @@ smoothing_box.configure(state='readonly')
 smoothing_box.current(0)
 smoothing_box.pack(pady=8)
 
+seq_row = tk.Frame(root)
+seq_row.pack(pady=8)
+# Create singe image button
+single_img_button = ttk.Button(seq_row, 
+                              text="Single Image", 
+                              command=lambda: run_single(save_flag.get(), smoothing_box.get()))
+single_img_button.pack(side='left', padx=8)
+
 # Create start triggered sequence button
-start_button = ttk.Button(root, 
-                          text="Run Triggered Sequence", 
+start_button = ttk.Button(seq_row, 
+                          text="Triggered Sequence", 
                           command=lambda: run_sequence(save_flag.get(), smoothing_box.get()))
-start_button.pack(pady=8)
+start_button.pack(side='right', pady=8)
 
 # Create video mode button
 video_button = ttk.Button(root, 

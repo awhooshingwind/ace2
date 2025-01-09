@@ -27,7 +27,7 @@ def fix_hot_pixels(image):
 
 
 class TriggeredSequence:
-    def __init__(self, save_path='Basler', autosave=False, smoothing='Gaussian'):
+    def __init__(self, save_path='Basler', autosave=False, smoothing='Gaussian', singlet_flag=False):
         self.images = {}
         self.image_count = 0
         self.image_types = ['shadow', 'light', 'dark']
@@ -35,38 +35,55 @@ class TriggeredSequence:
         self.autosave = autosave
         self.sequence_count = 0
         self.smoothing_type = smoothing
+        self.singlet_flag = singlet_flag
 
         self.figh, self.figw = 300, 1200
+        if singlet_flag:
+            self.figw = 400
         self.combined_image = np.zeros((self.figh, self.figw), dtype=np.uint16)
         self.resized_imgs = []
         # cv2.imshow('Triggered_Images', self.combined_image) # testing for event handler
     
         
     def add_image(self, image):
-        
-        print("Img sequenced")
-        self.images[self.image_types[self.image_count]] = image
-        self.image_count += 1
-        self.display_incoming(image)
-        if self.image_count == 3:
-            self.sequence_complete()
-            self.image_count = 0
+        if not self.singlet_flag:
+            print("Img sequenced")
+            self.images[self.image_types[self.image_count]] = image
+            self.image_count += 1
+            self.display_incoming(image)
+            if self.image_count == 3:
+                self.sequence_complete()
+                self.image_count = 0
+
+        if self.singlet_flag:
+            self.images['calc'] = fix_hot_pixels(image)
+            self.display_incoming(image)
+            self.image_count += 1
+            self.single_complete()
 
     def display_incoming(self, image):
         # Display incoming images, testing for event handler approach
-        w_ratio = self.figw//3
+        w_ratio = self.figw
+        if not self.singlet_flag:
+            w_ratio = self.figw//3
+    
         self.resized_imgs.append(image)
             
         for i in range(len(self.resized_imgs)):
             self.resized_imgs[i] = cv2.resize(self.resized_imgs[i], (w_ratio, self.figh))
             self.combined_image[0:self.figh, i*w_ratio:(i+1)*w_ratio] = self.resized_imgs[i]
             cv2.imshow('Triggered_Images', self.combined_image)
-        
+    
+    def single_complete(self):
+        print(f"Single image #{self.image_count} grabbed....")
+        self.display_calculated_image()
+        self.resized_imgs = []
+
+
 
     def sequence_complete(self):
         self.sequence_count += 1
         print(f"Sequence {self.sequence_count} completed...")
-
         self.calc_result()
         self.display_calculated_image()
         self.resized_imgs = []
