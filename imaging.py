@@ -100,7 +100,7 @@ def trigger_mode(hw_mode, ts):
                 elif not hw_mode and key == ord(" "):
                     camera.ExecuteSoftwareTrigger()
                 # you cant check your key entry and wait for the next image in one thread at the same time,
-                # so you can use this wait-object to check for new images and skip the 5 sec Timeout during RecieveResult
+                # so you can use this wait-object to check for new images and skip the 5 sec Timeout during ReceiveResult
                 if not camera.GetGrabResultWaitObject().Wait(10):
                     continue
                 try:

@@ -4,7 +4,6 @@ Current implementation is overloaded to also handle absorption calculation,
 incoming image streaming and matplotlib display, hot pixel correction,
 and saving images in appropriate .txt format for analysis...
 
-TODO: Refactor into more manageable classes (and rework imaging.py and gui.py) 08/2025
 
 """
 
@@ -163,9 +162,3 @@ class TriggeredSequence:
         self.ax.set_title(f'Triggered Image/Sequence #{self.sequence_count}')
         plt.pause(0.1)
         
-        # Old buggy version
-        # plt.imshow(img, cmap='viridis', vmax=np.max(img), vmin=np.min(img))
-        # plt.axis('off')
-        # plt.title(f'Triggered Image/Sequence #{self.sequence_count}')
-        # plt.draw()
-        # plt.pause(0.01)
